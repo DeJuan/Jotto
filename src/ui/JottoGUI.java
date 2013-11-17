@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 
+import model.JottoModel;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
@@ -31,6 +33,7 @@ public class JottoGUI extends JFrame {
     public static JPanel jottoPanel = new JPanel();
     public Random generator = new Random();
     public final JLabel guessDescription;
+    private final JottoModel jottoModel = new JottoModel();
     
     public JottoGUI() {
         newPuzzleButton = new JButton();
@@ -43,7 +46,7 @@ public class JottoGUI extends JFrame {
         
         puzzleNumber = new JLabel();
         puzzleNumber.setName("puzzleNumber");
-        puzzleNumber.setText("Puzzle #Placeholder");
+        puzzleNumber.setText("Puzzle #42");
         
         guessDescription = new JLabel();
         guessDescription.setName("guessDescription");
@@ -99,7 +102,7 @@ public class JottoGUI extends JFrame {
 				try
 				{
 					int newPuz = Integer.parseInt(newPuzzleNumber.getText());
-					puzzleNumber.setText("Puzzle#"+newPuz);
+					puzzleNumber.setText("Puzzle# "+newPuz);
 				}
 				catch(NumberFormatException nfeinvinp)
 				{
@@ -111,8 +114,28 @@ public class JottoGUI extends JFrame {
         	
         };
         
+        ActionListener sendGuessToServer = new ActionListener()
+        {
+        	public void actionPerformed(ActionEvent e)
+        	{
+        		try 
+        		{	
+        			//System.out.println(guess.getText());
+        			//System.out.println(Integer.parseInt(puzzleNumber.getText().substring(8)));
+					String result = jottoModel.makeGuess(guess.getText(), Integer.parseInt(puzzleNumber.getText().substring(8)));
+					System.out.println(result);
+					guess.setText("");
+				} 
+        		catch (Exception e1) {
+					guess.setText("");
+				}
+        	}
+        };
+        
         newPuzzleButton.addActionListener(puzzleRefresher);
         newPuzzleNumber.addActionListener(puzzleRefresher);
+        
+        guess.addActionListener(sendGuessToServer);
         
         layout.linkSize(puzzleNumber, newPuzzleButton, newPuzzleNumber);
         this.pack();

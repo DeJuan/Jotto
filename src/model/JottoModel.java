@@ -22,9 +22,8 @@ public class JottoModel {
      * @throws RuntimeException if the above are fine, but the input to server was invalid and caused an error. 
      */
     public String makeGuess(String guess, int currentPuzzle) throws Exception {
-    	int puzzleNumber = currentPuzzle;
         URL jottoSite = new URL("http://courses.csail.mit.edu/6.005/jotto.py?puzzle="
-        		+ puzzleNumber + "&guess=" + guess);
+        		+ currentPuzzle + "&guess=" + guess);
         BufferedReader replyFromServer = new BufferedReader(new InputStreamReader(jottoSite.openStream()));
         String reply = "";
         String currentSectionOfReply;
@@ -32,7 +31,13 @@ public class JottoModel {
         {
         	if (currentSectionOfReply.contains("error"))
         	{
+        		System.out.println(currentSectionOfReply);
         		throw new RuntimeException("The input to the server was invalid");
+        	}
+        	
+        	if (currentSectionOfReply.compareTo("guess 5 5") == 0)
+        	{
+        		System.out.println("You win! The secret word was " + guess + "!" );
         	}
         	reply += currentSectionOfReply;
         }
