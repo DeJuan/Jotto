@@ -1,5 +1,9 @@
 package ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
@@ -19,12 +23,14 @@ import javax.swing.SwingUtilities;
 public class JottoGUI extends JFrame {
 
     // remember to use these objects in your GUI:
-    private final JButton newPuzzleButton;
-    private final JTextField newPuzzleNumber;
-    private final JLabel puzzleNumber;
-    private final JTextField guess;
-    private final JTable guessTable;
+    public final JButton newPuzzleButton;
+    public final JTextField newPuzzleNumber;
+    public JLabel puzzleNumber;
+    public final JTextField guess;
+    public final JTable guessTable;
     public static JPanel jottoPanel = new JPanel();
+    public Random generator = new Random();
+    public final JLabel guessDescription;
     
     public JottoGUI() {
         newPuzzleButton = new JButton();
@@ -33,14 +39,20 @@ public class JottoGUI extends JFrame {
         
         newPuzzleNumber = new JTextField();
         newPuzzleNumber.setName("newPuzzleNumber");
-        newPuzzleNumber.setText("Enter Desired Puzzle Number");
+        newPuzzleNumber.setToolTipText("Enter Desired Puzzle Number");
         
         puzzleNumber = new JLabel();
         puzzleNumber.setName("puzzleNumber");
         puzzleNumber.setText("Puzzle #Placeholder");
         
+        guessDescription = new JLabel();
+        guessDescription.setName("guessDescription");
+        guessDescription.setText("Please enter your guess in the box to the right");
+        
+        
         guess = new JTextField();
         guess.setName("guess");
+        
         
         guessTable = new JTable();
         guessTable.setName("guessTable");
@@ -54,32 +66,60 @@ public class JottoGUI extends JFrame {
         //horizontal layout = sequential group { c1, c2, c3 }
         GroupLayout layout = new GroupLayout(this.getContentPane());
         this.setLayout(layout);
-        //layout.setAutoCreateContainerGaps(true);
-        //layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+        layout.setAutoCreateGaps(true);
        
         
         layout.setHorizontalGroup(
-        		layout.createSequentialGroup()
+        		layout.createParallelGroup()
         			.addGroup(layout.createSequentialGroup()
         					.addComponent(puzzleNumber)
         					.addComponent(newPuzzleButton)
-        					.addComponent(newPuzzleNumber)));
+        					.addComponent(newPuzzleNumber))
+        			.addGroup(layout.createSequentialGroup()
+        					.addComponent(guessDescription)
+        					.addComponent(guess)));
         
         
         layout.setVerticalGroup(
-        		layout.createSequentialGroup()
-        			.addGroup(layout.createParallelGroup()
+        		layout.createParallelGroup()
+        			.addGroup(layout.createSequentialGroup()
         				.addComponent(puzzleNumber)
+                		.addComponent(guessDescription))
+        			.addGroup(layout.createSequentialGroup()
         				.addComponent(newPuzzleButton)
-        				.addComponent(newPuzzleNumber)));
-        		
+        				.addComponent(guess))
+        			.addComponent(newPuzzleNumber));
+        			
         
+        ActionListener puzzleRefresher = new ActionListener()
+        {
+			public void actionPerformed(ActionEvent e) throws NumberFormatException
+			{
+				try
+				{
+					int newPuz = Integer.parseInt(newPuzzleNumber.getText());
+					puzzleNumber.setText("Puzzle#"+newPuz);
+				}
+				catch(NumberFormatException nfeinvinp)
+				{
+					int randomIndex = generator.nextInt(100000);
+					puzzleNumber.setText("Puzzle#"+randomIndex);
+				}
+				
+			}
+        	
+        };
+        
+        newPuzzleButton.addActionListener(puzzleRefresher);
+        newPuzzleNumber.addActionListener(puzzleRefresher);
         
         layout.linkSize(puzzleNumber, newPuzzleButton, newPuzzleNumber);
         this.pack();
+        }
         
-        
-    }
+     
+      
 
     public static void main(final String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

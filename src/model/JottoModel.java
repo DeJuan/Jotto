@@ -21,8 +21,8 @@ public class JottoModel {
      * @throws IOException if there's something wrong with the readers
      * @throws RuntimeException if the above are fine, but the input to server was invalid and caused an error. 
      */
-    public String makeGuess(String guess) throws Exception {
-    	int puzzleNumber =5555;
+    public String makeGuess(String guess, int currentPuzzle) throws Exception {
+    	int puzzleNumber = currentPuzzle;
         URL jottoSite = new URL("http://courses.csail.mit.edu/6.005/jotto.py?puzzle="
         		+ puzzleNumber + "&guess=" + guess);
         BufferedReader replyFromServer = new BufferedReader(new InputStreamReader(jottoSite.openStream()));
