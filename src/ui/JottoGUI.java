@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 /**
@@ -38,6 +39,7 @@ public class JottoGUI extends JFrame {
     public Random generator = new Random();
     public final JLabel guessDescription;
     private final JottoModel jottoModel = new JottoModel();
+    private int counter = 0;
     
     public JottoGUI() {
         newPuzzleButton = new JButton();
@@ -62,7 +64,7 @@ public class JottoGUI extends JFrame {
         
         
         class JottoTableModel extends AbstractTableModel
-        {	Object[][] rowData = new Object[11][3];
+        {	Object[][] rowData = new Object[30][3];
         	public int getRowCount() {return rowData.length;}
         	public int getColumnCount() { return 3;}
         	public Object getValueAt(int row, int col){
@@ -76,14 +78,15 @@ public class JottoGUI extends JFrame {
         	}
         	
         	public void resetTable(){
-        		rowData = new Object[11][3];
+        		rowData = new Object[30][3];
         		fireTableStructureChanged();
         	}
         	
         }
-        JottoTableModel mod = new JottoTableModel();
-        guessTable = new JTable(mod);
+        //JottoTableModel mod = new JottoTableModel();
+        guessTable = new JTable(new DefaultTableModel(new Object[]{"Guess", "Common", "Correct"}, 1));
         guessTable.setName("guessTable");
+        final DefaultTableModel tableModel = (DefaultTableModel) guessTable.getModel();
         
         
         
@@ -152,12 +155,21 @@ public class JottoGUI extends JFrame {
         		{	
         			//System.out.println(guess.getText());
         			//System.out.println(Integer.parseInt(puzzleNumber.getText().substring(8)));
-					String result = jottoModel.makeGuess(guess.getText(), Integer.parseInt(puzzleNumber.getText().substring(8)));
+        			String attemptedGuess = guess.getText();
+        			guessTable.setValueAt(attemptedGuess, counter, 0);
+					String result = jottoModel.makeGuess(attemptedGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
 					System.out.println(result);
 					guess.setText("");
+					guessTable.setValueAt(result.substring(6,7), counter, 1);
+					guessTable.setValueAt(result.substring(8,9), counter, 2);
+					counter +=1;
+					tableModel.addRow(new Object[3]);
 				} 
         		catch (Exception e1) {
+        			guessTable.setValueAt("Invalid guess", counter, 1);
 					guess.setText("");
+					counter+=1;
+					tableModel.addRow(new Object[3]);
 				}
         	}
         };
@@ -184,4 +196,5 @@ public class JottoGUI extends JFrame {
             }
         });
     }
+    
 }
