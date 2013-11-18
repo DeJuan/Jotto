@@ -7,14 +7,18 @@ import java.util.Random;
 import model.JottoModel;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 /**
  * // TODO Write specifications for your JottoGUI class.
@@ -57,16 +61,35 @@ public class JottoGUI extends JFrame {
         guess.setName("guess");
         
         
-        guessTable = new JTable();
+        class JottoTableModel extends AbstractTableModel
+        {	Object[][] rowData = new Object[11][3];
+        	public int getRowCount() {return rowData.length;}
+        	public int getColumnCount() { return 3;}
+        	public Object getValueAt(int row, int col){
+        		return null; //Don't think you can actually get the data...
+        	}
+        	public boolean isCellEditable(int row, int col) {return false;}
+        	public void setValueAt(Object value, int row, int col)
+        	{
+        		rowData[row][col] = value;
+        		fireTableCellUpdated(row, col);
+        	}
+        	
+        	public void resetTable(){
+        		rowData = new Object[11][3];
+        		fireTableStructureChanged();
+        	}
+        	
+        }
+        JottoTableModel mod = new JottoTableModel();
+        guessTable = new JTable(mod);
         guessTable.setName("guessTable");
         
-        /*
-        jottoPanel.add(puzzleNumber);
-        jottoPanel.add(newPuzzleButton);
-        jottoPanel.add(newPuzzleNumber);
-        */
-        //Problem 2: Create the top row of the GUI. They're in horizontal sequence. 
-        //horizontal layout = sequential group { c1, c2, c3 }
+        
+        
+        
+        
+        
         GroupLayout layout = new GroupLayout(this.getContentPane());
         this.setLayout(layout);
         layout.setAutoCreateContainerGaps(true);
@@ -81,19 +104,26 @@ public class JottoGUI extends JFrame {
         					.addComponent(newPuzzleNumber))
         			.addGroup(layout.createSequentialGroup()
         					.addComponent(guessDescription)
-        					.addComponent(guess)));
+        					.addComponent(guess))   // );
+        			.addGroup(layout.createSequentialGroup())
+        					.addComponent(guessTable));
         
         
         layout.setVerticalGroup(
-        		layout.createParallelGroup()
-        			.addGroup(layout.createSequentialGroup()
-        				.addComponent(puzzleNumber)
-                		.addComponent(guessDescription))
-        			.addGroup(layout.createSequentialGroup()
+        		layout.createSequentialGroup()        			
+        			.addGroup(layout.createParallelGroup()
         				.addComponent(newPuzzleButton)
-        				.addComponent(guess))
-        			.addComponent(newPuzzleNumber));
+        				.addComponent(puzzleNumber)
+        				.addComponent(newPuzzleNumber))
+        			.addGroup(layout.createParallelGroup()
+                		.addComponent(guessDescription)
+                		.addComponent(guess))
+        			.addGroup(layout.createParallelGroup()
+        					.addComponent(guessTable)));
         			
+        
+     
+        
         
         ActionListener puzzleRefresher = new ActionListener()
         {
