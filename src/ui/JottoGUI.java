@@ -62,7 +62,7 @@ public class JottoGUI extends JFrame {
         guess = new JTextField();
         guess.setName("guess");
         
-        
+        /*
         class JottoTableModel extends AbstractTableModel
         {	Object[][] rowData = new Object[30][3];
         	public int getRowCount() {return rowData.length;}
@@ -83,10 +83,13 @@ public class JottoGUI extends JFrame {
         	}
         	
         }
-        //JottoTableModel mod = new JottoTableModel();
+        //JottoTableModel mod = new JottoTableModel();*/
         guessTable = new JTable(new DefaultTableModel(new Object[]{"Guess", "Common", "Correct"}, 1));
         guessTable.setName("guessTable");
         final DefaultTableModel tableModel = (DefaultTableModel) guessTable.getModel();
+        
+        JScrollPane scrollPane = new JScrollPane(guessTable);
+        scrollPane.setName("scroller");
         
         
         
@@ -109,7 +112,7 @@ public class JottoGUI extends JFrame {
         					.addComponent(guessDescription)
         					.addComponent(guess))   // );
         			.addGroup(layout.createSequentialGroup())
-        					.addComponent(guessTable));
+        					.addComponent(scrollPane));
         
         
         layout.setVerticalGroup(
@@ -122,7 +125,7 @@ public class JottoGUI extends JFrame {
                 		.addComponent(guessDescription)
                 		.addComponent(guess))
         			.addGroup(layout.createParallelGroup()
-        					.addComponent(guessTable)));
+        					.addComponent(scrollPane)));
         			
         
      
@@ -136,11 +139,19 @@ public class JottoGUI extends JFrame {
 				{
 					int newPuz = Integer.parseInt(newPuzzleNumber.getText());
 					puzzleNumber.setText("Puzzle# "+newPuz);
+					newPuzzleNumber.setText("");
+					tableModel.setRowCount(0);
+					tableModel.addRow(new Object[3]);
+					counter = 0;
 				}
 				catch(NumberFormatException nfeinvinp)
 				{
 					int randomIndex = generator.nextInt(100000);
 					puzzleNumber.setText("Puzzle#"+randomIndex);
+					newPuzzleNumber.setText("");
+					tableModel.setRowCount(0);
+					tableModel.addRow(new Object[3]);
+					counter = 0;
 				}
 				
 			}
@@ -160,10 +171,19 @@ public class JottoGUI extends JFrame {
 					String result = jottoModel.makeGuess(attemptedGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
 					System.out.println(result);
 					guess.setText("");
+					if (result.compareTo("guess 5 5") == 0)	
+					{	
+						guessTable.setValueAt("You win!", counter, 1);
+						counter+=1;
+						tableModel.addRow(new Object[3]);
+					}
+					else
+					{	
 					guessTable.setValueAt(result.substring(6,7), counter, 1);
 					guessTable.setValueAt(result.substring(8,9), counter, 2);
 					counter +=1;
 					tableModel.addRow(new Object[3]);
+					}
 				} 
         		catch (Exception e1) {
         			guessTable.setValueAt("Invalid guess", counter, 1);
