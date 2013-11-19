@@ -17,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -40,6 +41,8 @@ public class JottoGUI extends JFrame {
     public final JLabel guessDescription;
     private final JottoModel jottoModel = new JottoModel();
     private int counter = 0;
+    public String currentGuess;
+    private int duplecounter = 0;
     
     public JottoGUI() {
         newPuzzleButton = new JButton();
@@ -131,6 +134,52 @@ public class JottoGUI extends JFrame {
      
         
         
+        
+        
+        class ServerMessenger extends SwingWorker<String, String>
+        {
+        	private String result;
+        	private int duplecounterLocal = new Integer(duplecounter);
+     	   @Override
+     	   public String doInBackground() throws Exception
+     	   {
+     		   duplecounter+=1;
+     		   result = jottoModel.makeGuess(currentGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
+     		   return result;
+     	   }
+     	   
+     	   @Override
+     	   protected void done()
+     	   {
+     		 
+     		   try
+     		   {
+     			  if (result.compareTo("guess 5 5") == 0)	
+					{	
+     				  	
+						guessTable.setValueAt("You win!", duplecounterLocal, 1);
+						//duplecounter+=1;
+						//tableModel.addRow(new Object[3]);
+					}
+     			  
+     			 else
+					{	
+					guessTable.setValueAt(result.substring(6,7), duplecounterLocal, 1);
+					guessTable.setValueAt(result.substring(8,9), duplecounterLocal, 2);
+					//duplecounter +=1;
+					//tableModel.addRow(new Object[3]);
+					}
+     		   }
+     		   catch(Exception expaow)
+     		   {
+     			   guessTable.setValueAt("Invalid guess", duplecounterLocal, 1);
+     			   //duplecounter +=1;
+     		   }
+     	   }
+     	   
+     	   
+        }
+        
         ActionListener puzzleRefresher = new ActionListener()
         {
 			public void actionPerformed(ActionEvent e) throws NumberFormatException
@@ -143,6 +192,7 @@ public class JottoGUI extends JFrame {
 					tableModel.setRowCount(0);
 					tableModel.addRow(new Object[3]);
 					counter = 0;
+					duplecounter = 0;
 				}
 				catch(NumberFormatException nfeinvinp)
 				{
@@ -152,6 +202,7 @@ public class JottoGUI extends JFrame {
 					tableModel.setRowCount(0);
 					tableModel.addRow(new Object[3]);
 					counter = 0;
+					duplecounter = 0;
 				}
 				
 			}
@@ -167,10 +218,15 @@ public class JottoGUI extends JFrame {
         			//System.out.println(guess.getText());
         			//System.out.println(Integer.parseInt(puzzleNumber.getText().substring(8)));
         			String attemptedGuess = guess.getText();
+        			currentGuess = attemptedGuess;
         			guessTable.setValueAt(attemptedGuess, counter, 0);
-					String result = jottoModel.makeGuess(attemptedGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
-					System.out.println(result);
+        			counter+=1;
+        			tableModel.addRow(new Object[3]);
+					//String result = jottoModel.makeGuess(attemptedGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
+					new ServerMessenger().execute();
+					//System.out.println(result);
 					guess.setText("");
+					/*
 					if (result.compareTo("guess 5 5") == 0)	
 					{	
 						guessTable.setValueAt("You win!", counter, 1);
@@ -184,11 +240,15 @@ public class JottoGUI extends JFrame {
 					counter +=1;
 					tableModel.addRow(new Object[3]);
 					}
+					*/
 				} 
         		catch (Exception e1) {
+        			duplecounter+=1;
+        			counter+=1;
         			guessTable.setValueAt("Invalid guess", counter, 1);
 					guess.setText("");
-					counter+=1;
+					
+					//duplecounter+=1;
 					tableModel.addRow(new Object[3]);
 				}
         	}
@@ -201,9 +261,16 @@ public class JottoGUI extends JFrame {
         
         layout.linkSize(puzzleNumber, newPuzzleButton, newPuzzleNumber);
         this.pack();
+        
+        
+        
+        
+        
+        
+        
         }
         
-     
+   
       
 
     public static void main(final String[] args) {
@@ -212,7 +279,7 @@ public class JottoGUI extends JFrame {
                 JottoGUI main = new JottoGUI();
 
                 main.setVisible(true);
-                //jottoPanel.setVisible(true);
+               
             }
         });
     }
