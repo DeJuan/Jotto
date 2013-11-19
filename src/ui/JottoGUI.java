@@ -23,14 +23,32 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 /**
- * // TODO Write specifications for your JottoGUI class.
- * // Remember to name all your components, otherwise autograder will give a zero.
- * // Remember to use the objects newPuzzleButton, newPuzzleNumber, puzzleNumber,
- * // guess, and guessTable in your GUI!
+ * This class is the GUI for the Jotto game. 
+ * It relies on JottoModel, SwingWorker, and many other Javax.Swing modules.
+ * I have tested it as multithreaded by creating a SwingWorker 
+ * to which all of the handling of a guess is dispatched. 
+ * Each individual SwingWorker takes a copy of a duplication counter, 
+ * used to mark the current row of the table where the swing thread
+ * is working. This duplication counter is then incremented for the next
+ * SwingWorker to take their value from. 
+ * 
+ * A nice side effect of this is that the delay for long guesses
+ * does not freeze the GUI, and the GUI also instantly responds to invalid
+ * inputs, as it can work concurrently with other threads processing the inputs
+ * on the same table, as all threads know where they should be working and
+ * thus don't have to wait for each other. 
+ * 
+ * In the event that a new puzzle is requested before all the calls return, 
+ * the previous calls, since their locations are now invalid, will all return
+ * with exceptions as they're now out of bounds. I haven't quite figured out
+ * exactly how to set their "isCancelled" status, but for now, since that won't
+ * actually interfere with playing with the new puzzle as those exceptions go off
+ * in the background, it is a problem that can be bypassed for now and potentially revisited
+ * for the final.
  */
 public class JottoGUI extends JFrame {
 
-    // remember to use these objects in your GUI:
+    // Note that most of these have become public for the Listeners to use.
     public final JButton newPuzzleButton;
     public final JTextField newPuzzleNumber;
     public JLabel puzzleNumber;
@@ -64,29 +82,6 @@ public class JottoGUI extends JFrame {
         
         guess = new JTextField();
         guess.setName("guess");
-        
-        /*
-        class JottoTableModel extends AbstractTableModel
-        {	Object[][] rowData = new Object[30][3];
-        	public int getRowCount() {return rowData.length;}
-        	public int getColumnCount() { return 3;}
-        	public Object getValueAt(int row, int col){
-        		return null; //Don't think you can actually get the data...
-        	}
-        	public boolean isCellEditable(int row, int col) {return false;}
-        	public void setValueAt(Object value, int row, int col)
-        	{
-        		rowData[row][col] = value;
-        		fireTableCellUpdated(row, col);
-        	}
-        	
-        	public void resetTable(){
-        		rowData = new Object[30][3];
-        		fireTableStructureChanged();
-        	}
-        	
-        }
-        //JottoTableModel mod = new JottoTableModel();*/
         guessTable = new JTable(new DefaultTableModel(new Object[]{"Guess", "Common", "Correct"}, 1));
         guessTable.setName("guessTable");
         final DefaultTableModel tableModel = (DefaultTableModel) guessTable.getModel();
@@ -113,7 +108,7 @@ public class JottoGUI extends JFrame {
         					.addComponent(newPuzzleNumber))
         			.addGroup(layout.createSequentialGroup()
         					.addComponent(guessDescription)
-        					.addComponent(guess))   // );
+        					.addComponent(guess))  
         			.addGroup(layout.createSequentialGroup())
         					.addComponent(scrollPane));
         
@@ -138,6 +133,9 @@ public class JottoGUI extends JFrame {
         
         class ServerMessenger extends SwingWorker<String, String>
         {
+        	//Note that here we take the current value of the duplecounter and
+        	//copy it for our local version. The very first thing we do, 
+        	//before anything else, is to increment this for the next worker.
         	private String result;
         	private int duplecounterLocal = new Integer(duplecounter);
      	   @Override
@@ -155,25 +153,19 @@ public class JottoGUI extends JFrame {
      		   try
      		   {
      			  if (result.compareTo("guess 5 5") == 0)	
-					{	
-     				  	
+					{	 	
 						guessTable.setValueAt("You win!", duplecounterLocal, 1);
-						//duplecounter+=1;
-						//tableModel.addRow(new Object[3]);
 					}
      			  
      			 else
 					{	
 					guessTable.setValueAt(result.substring(6,7), duplecounterLocal, 1);
 					guessTable.setValueAt(result.substring(8,9), duplecounterLocal, 2);
-					//duplecounter +=1;
-					//tableModel.addRow(new Object[3]);
 					}
      		   }
      		   catch(Exception expaow)
      		   {
      			   guessTable.setValueAt("Invalid guess", duplecounterLocal, 1);
-     			   //duplecounter +=1;
      		   }
      	   }
      	   
@@ -183,7 +175,7 @@ public class JottoGUI extends JFrame {
         ActionListener puzzleRefresher = new ActionListener()
         {
 			public void actionPerformed(ActionEvent e) throws NumberFormatException
-			{
+			{ //Note the resets of the global counters.
 				try
 				{
 					int newPuz = Integer.parseInt(newPuzzleNumber.getText());
@@ -215,40 +207,19 @@ public class JottoGUI extends JFrame {
         	{
         		try 
         		{	
-        			//System.out.println(guess.getText());
-        			//System.out.println(Integer.parseInt(puzzleNumber.getText().substring(8)));
         			String attemptedGuess = guess.getText();
         			currentGuess = attemptedGuess;
         			guessTable.setValueAt(attemptedGuess, counter, 0);
         			counter+=1;
         			tableModel.addRow(new Object[3]);
-					//String result = jottoModel.makeGuess(attemptedGuess, Integer.parseInt(puzzleNumber.getText().substring(8)));
 					new ServerMessenger().execute();
-					//System.out.println(result);
 					guess.setText("");
-					/*
-					if (result.compareTo("guess 5 5") == 0)	
-					{	
-						guessTable.setValueAt("You win!", counter, 1);
-						counter+=1;
-						tableModel.addRow(new Object[3]);
-					}
-					else
-					{	
-					guessTable.setValueAt(result.substring(6,7), counter, 1);
-					guessTable.setValueAt(result.substring(8,9), counter, 2);
-					counter +=1;
-					tableModel.addRow(new Object[3]);
-					}
-					*/
 				} 
         		catch (Exception e1) {
         			duplecounter+=1;
         			counter+=1;
         			guessTable.setValueAt("Invalid guess", counter, 1);
 					guess.setText("");
-					
-					//duplecounter+=1;
 					tableModel.addRow(new Object[3]);
 				}
         	}

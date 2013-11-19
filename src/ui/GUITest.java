@@ -86,8 +86,47 @@ package ui;
 /**
  * PROBLEM 5==================================================================================================
  * 
+ * For this particular problem, I didn't really have a pinpoint strategy like the above ones.
  * 
+ * 1) I first just wrote the code for a SwingWorker, didn't attach anything to it, 
+ * just wrote it and tried not to error anything.
  * 
+ * 2) I started commenting out code in the EDT and relegating a copy of that
+ * commented code to the SwingWorker(in uncommented form). I then
+ * tested to see if the SwingWorker was picking up its execution call and functioning 
+ * properly.
  * 
+ * 3) I then relegated all of the code to the SwingWorker and began debugging.
+ * I changed most of the variables to public for the Workers' sakes and also
+ * devised a solution using global integer counters to solve the issue of
+ * where each thread should work. 
+ * 
+ * 4) I then implemented my solution, noted some bugs that occurred, and then
+ * revised my solution.
+ * 
+ * 5) I commented out any discards from the previous solution and then added
+ * code for my newly revised version of my solution.
+ * 
+ * 6) I looped through steps 4 and 5 until the code worked. Note that step 4, where I say
+ * "some bugs", mainly referred to processing errors correctly: At first, it would
+ * overwrite the current slot with the error, then keep updating. Then, it would overwrite
+ * the current slot with the error, then without updating or adding new slots, keep
+ * overwriting the same slot with the data. Then came my idea of isolating a local
+ * copy of the globals for each Worker. I implemented this and saw that it worked.
+ * 
+ * 7) I then checked for what would happen when I refreshed the table while
+ * threads were still running using the asterisk delayer. 
+ * As of this revision, they all come back with 
+ * OutOfBounds exceptions as they refer to places that are no longer valid.
+ * This doesn't actually affect the game unless you go so fast that you reset
+ * the current board and then rapidly approach the locations that are unfinished
+ * and happen to expand the board into them, but the glitch will be overwritten when you submit
+ * your guess there. Unless you deliberately attempt to discover this, it will not
+ * affect gameplay, but I have documented this both in the concurrency argument
+ * comment and here so that it is known that this glitch exists, I know it exists,
+ * and have left it unfixed for now.
+ * 
+ *  
  */
+//============================END PROBLEM 5===================================================================
 
