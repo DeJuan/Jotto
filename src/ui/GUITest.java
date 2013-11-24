@@ -124,7 +124,9 @@ package ui;
  * your guess there. Unless you deliberately attempt to discover this, it will not
  * affect gameplay, but I have documented this both in the concurrency argument
  * comment and here so that it is known that this glitch exists, I know it exists,
- * and have left it unfixed for now.
+ * and have left it unfixed for now. Again, the effect isn't notable unless
+ * you very deliberately and quite quickly use the asterisk delays repeatedly while refreshing the
+ * server.
  * 
  *  
  */

@@ -40,11 +40,11 @@ import javax.swing.table.TableModel;
  * 
  * In the event that a new puzzle is requested before all the calls return, 
  * the previous calls, since their locations are now invalid, will all return
- * with exceptions as they're now out of bounds. I haven't quite figured out
- * exactly how to set their "isCancelled" status, but for now, since that won't
- * actually interfere with playing with the new puzzle as those exceptions go off
- * in the background, it is a problem that can be bypassed for now and potentially revisited
- * for the final.
+ * with exceptions as they're now out of bounds. 
+ * 
+ * Also, it should be noted that upon initialization, we always start
+ * playing with puzzle #42. If you do not see the reference, please check the comment
+ * by the line where the puzzle number is first set. If you do, I tip my hat to you. (Yay rhyming. ^_^)
  */
 public class JottoGUI extends JFrame {
 
@@ -73,7 +73,10 @@ public class JottoGUI extends JFrame {
         
         puzzleNumber = new JLabel();
         puzzleNumber.setName("puzzleNumber");
-        puzzleNumber.setText("Puzzle #42");
+        puzzleNumber.setText("Puzzle #42"); //If you are a fan of the Hitchhiker's Guide or know your Internet memes, you'll understand.
+        //If you are not, then this is why: 42 is the answer to life, the universe, and everything.
+        //So we always start at puzzle 42 for fun. A little tip of the hat to those who get the reference.
+        
         
         guessDescription = new JLabel();
         guessDescription.setName("guessDescription");
@@ -130,7 +133,18 @@ public class JottoGUI extends JFrame {
         
         
         
-        
+        /**
+         * This is a server messenger background worker for actually
+         * carrying out communication between the server and our program.
+         * 
+         * Its doInBackground method carries out the server communication and
+         * returns the string result of that communication.
+         * 
+         * Its done() method parses the result and sends the proper sections of it
+         * to the event dispatch thread to update the GUI. 
+         * @author DeJuan
+         *
+         */
         class ServerMessenger extends SwingWorker<String, String>
         {
         	//Note that here we take the current value of the duplecounter and
@@ -171,7 +185,20 @@ public class JottoGUI extends JFrame {
      	   
      	   
         }
-        
+        /**
+         * This action listener is used to refresh the puzzle and make changes whenever
+         * we decide to change puzzles. 
+         * 
+         * It listens for the submission of some text in the newPuzzleNumber field. 
+         * Upon detecting a submission, it attempts to parse the submission as an
+         * integer. If the parsing succeeds, the puzzle is updated to the new
+         * puzzle and all fields are cleared, variables reset, and the GUI refreshed.
+         * If the parsing fails, we choose a random integer from 0-99999 inclusive and
+         * set the new puzzle to that,and carry out the same tactic as if that random
+         * were the original submission.
+         * 
+         * @author DeJuan
+         */
         ActionListener puzzleRefresher = new ActionListener()
         {
 			public void actionPerformed(ActionEvent e) throws NumberFormatException
@@ -200,7 +227,25 @@ public class JottoGUI extends JFrame {
 			}
         	
         };
-        
+        /**
+         * This is the action listener that actually creates ServerMessengers
+         * to handle guessing.
+         * 
+         * It listens for when a guess is made. Upon a guess being submitted,
+         * it creates and then invokes a ServerMessenger to actually carry out
+         * the communication process. If the server messenger throws an
+         * exception for an invalid guess, the messenger passes that exception
+         * up back to this method, where the row is immediately updated with
+         * the human readable "Invalid guess". 
+         * 
+         * However, before invoking the ServerMessenger, the Listener sets
+         * the appropriate row in the current table to the "guess" value, 
+         * and then makes a new row in the table so that it is prepared
+         * to handle a subsequent guess at any time after the first, even if
+         * the first is still being processed. 
+         * 
+         * @author DeJuan
+         */
         ActionListener sendGuessToServer = new ActionListener()
         {
         	public void actionPerformed(ActionEvent e)
